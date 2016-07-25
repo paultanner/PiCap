@@ -16,9 +16,9 @@
  Connecting via OSC requires picap-datastream-osc on the Pi Cap
 
  Bare Conductive code written by Stefan Dzisiewski-Smith and Szymon Kaliski.
- Adapted with code from SimplePong.pde by ???
- Code hacking by @paul_tanner
- Hardware build by Ross and Tina
+ Adapted with code from SimplePong.pde from openprocessing.org
+ Code hacking by @paul_tanner to integrate the code and add features
+ Hardware design/ build by @rossatkin and @spongefile
 
  This work is licensed under a Creative Commons Attribution-ShareAlike 3.0
  Unported License (CC BY-SA 3.0) http://creativecommons.org/licenses/by-sa/3.0/
@@ -118,11 +118,7 @@ void setup() {
   // init serial
   serialList = Serial.list();
 
-  // other setup??
-  //setupGraphs();
-  //setupStartPrompt();
-  //setupRunGUI();
-  //setupLabels();
+  // other setup
   diffs = new int[numElectrodes];
 }
 
@@ -168,13 +164,13 @@ void oscEvent(OscMessage oscMessage) {
 void draw() {
   background(255);
  
-  fill(128,128,128);
+  //fill(128,128,128);
+  fill(200,0,0);
   diam = 20;
   ellipse(x, y, diam, diam);
 
-//  fill(leftColor);
-//  rect(0, 0, 20, height);
-  fill(leftColor);
+  //fill(leftColor);
+  fill(200,0,0);
   //rect(0, 0, 20, height);
   rect(width-30, vpos1-rectSize/2, 10, rectSize);
   rect(30, vpos2-rectSize/2, 10, rectSize);
@@ -189,7 +185,8 @@ void draw() {
       speedX = speedX * -1;
       x = x + speedX;
       rightColor = 0;
-      fill(random(0,128),random(0,128),random(0,128));
+      //fill(random(0,128),random(0,128),random(0,128));
+      fill(200,0,0);
       diamHit = random(75,150);
       ellipse(x,y,diamHit,diamHit);
       rectSize = rectSize-10;
@@ -201,7 +198,8 @@ void draw() {
       speedX = speedX * -1;
       x = x + speedX;
       rightColor = 0;
-      fill(random(0,128),random(0,128),random(0,128));
+      //fill(random(0,128),random(0,128),random(0,128));
+      fill(200,0,0);
       diamHit = random(75,150);
       ellipse(x,y,diamHit,diamHit);
       rectSize = rectSize-10;

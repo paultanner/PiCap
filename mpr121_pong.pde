@@ -7,9 +7,6 @@
 
  Requires Processing 3.0+
 
- Requires controlp5 (version 2.2.5+) to be in your processing libraries folder:
- http://www.sojamo.de/libraries/controlP5/
-
  Requires osc5 (version 0.9.8+) to be in your processing libraries folder:
  http://www.sojamo.de/libraries/oscP5/
 
@@ -33,40 +30,14 @@
 
 *******************************************************************************/
 
-import processing.serial.*;
-import controlP5.*;
 import oscP5.*;
 import netP5.*;
 
-final int baudRate = 57600;
-
 final int numElectrodes  = 12;
-final int numGraphPoints = 300;
-final int tenBits        = 1024;
-
-final int graphsLeft           = 20;
-final int graphsTop            = 20;
-final int graphsWidth          = 984;
-final int graphsHeight         = 540;
-final int numVerticalDivisions = 8;
-
-final int filteredColour = color(255, 0,   0,   200);
-final int baselineColour = color(0,   0,   255, 200);
-final int touchedColour  = color(255, 128, 0,   200);
-final int releasedColour = color(0,   128, 128, 200);
-final int textColour     = color(60);
-final int touchColour    = color(255, 0,   255, 200);
-final int releaseColour  = color(255, 255, 255, 200);
-
-final int graphFooterLeft = 20;
-final int graphFooterTop  = graphsTop + graphsHeight + 20;
-
-final int numFooterLabels = 6;
 
 boolean serialSelected = false;
 boolean oscSelected    = false;
 boolean firstRead      = true;
-boolean paused         = false;
 boolean soloMode       = false;
 
 boolean gameStart = false; //true;
@@ -83,21 +54,10 @@ float diamHit;
 int vpos1 = 0;
 int vpos2 = 0;
 
-ControlP5 cp5;
-ScrollableList electrodeSelector, serialSelector;
-Textlabel labels[], startPrompt, instructions, pausedIndicator;
-Button oscButton;
 
 OscP5 oscP5;
 
-Serial inPort;        // the serial port
-String[] serialList;
-String inString;      // input string from serial port
-String[] splitString; // input string array after splitting
-int lf = 10;          // ASCII linefeed
-
-int[] filteredData, baselineVals, diffs, touchThresholds, releaseThresholds, status, lastStatus;
-int[][] filteredGraph, baselineGraph, touchGraph, releaseGraph, statusGraph;
+int[] diffs;
 
 int globalGraphPtr  = 0;
 int electrodeNumber = 0;
@@ -109,14 +69,8 @@ void setup() {
   noStroke();
   smooth();
 
-  // init cp5
-  cp5 = new ControlP5(this);
-
   // setup OSC receiver on port 3000
   oscP5 = new OscP5(this, 3000);
-
-  // init serial
-  serialList = Serial.list();
 
   // other setup
   diffs = new int[numElectrodes];
@@ -129,22 +83,7 @@ void oscEvent(OscMessage oscMessage) {
     firstRead = false;
   }
   else {
-    if (oscMessage.checkAddrPattern("/touch")) {
-      updateArrayOSC(status, oscMessage.arguments());
-    }
-    else if (oscMessage.checkAddrPattern("/tths")) {
-      updateArrayOSC(touchThresholds, oscMessage.arguments());
-    }
-    else if (oscMessage.checkAddrPattern("/rths")) {
-      updateArrayOSC(releaseThresholds, oscMessage.arguments());
-    }
-    else if (oscMessage.checkAddrPattern("/fdat")) {
-      updateArrayOSC(filteredData, oscMessage.arguments());
-    }
-    else if (oscMessage.checkAddrPattern("/bval")) {
-      updateArrayOSC(baselineVals, oscMessage.arguments());
-    }
-    else if (oscMessage.checkAddrPattern("/diff")) {
+    if (oscMessage.checkAddrPattern("/diff")) {
       // simulate mouse in original game
       updateArrayOSC(diffs, oscMessage.arguments());
       vpos1=diffs[10]-diffs[1]+100; // guesswork
@@ -164,14 +103,11 @@ void oscEvent(OscMessage oscMessage) {
 void draw() {
   background(255);
  
-  //fill(128,128,128);
   fill(200,0,0);
   diam = 20;
   ellipse(x, y, diam, diam);
 
-  //fill(leftColor);
   fill(200,0,0);
-  //rect(0, 0, 20, height);
   rect(width-30, vpos1-rectSize/2, 10, rectSize);
   rect(30, vpos2-rectSize/2, 10, rectSize);
   
@@ -185,7 +121,6 @@ void draw() {
       speedX = speedX * -1;
       x = x + speedX;
       rightColor = 0;
-      //fill(random(0,128),random(0,128),random(0,128));
       fill(200,0,0);
       diamHit = random(75,150);
       ellipse(x,y,diamHit,diamHit);
@@ -198,7 +133,6 @@ void draw() {
       speedX = speedX * -1;
       x = x + speedX;
       rightColor = 0;
-      //fill(random(0,128),random(0,128),random(0,128));
       fill(200,0,0);
       diamHit = random(75,150);
       ellipse(x,y,diamHit,diamHit);
@@ -240,4 +174,14 @@ void draw() {
 
 void mousePressed() {
   gameStart = !gameStart;
+}
+
+void updateArrayOSC(int[] array, Object[] data) {
+  if (array == null || data == null) {
+    return;
+  }
+
+  for (int i = 0; i < min(array.length, data.length); i++) {
+    array[i] = (int)data[i];
+  }
 }
